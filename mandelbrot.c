@@ -24,19 +24,16 @@ int calcular_pixel(double parte_real, double parte_imaginaria, int max_iteracoes
 }
 
 void calcular_openmp(int largura, int altura, int max_iteracoes, int quantidade_threads, int *imagem){
-    int x;
     int y;
-    double parte_real;
-    double parte_imaginaria;
 
     omp_set_num_threads(quantidade_threads);
 
     #pragma omp parallel for
     for (y = 0; y < altura; y++){
-        parte_imaginaria = 1.5 - (3.0 * y / (altura - 1));
+        double parte_imaginaria = 1.5 - (3.0 * y / (altura - 1));
 
-        for (x = 0; x < largura; x++){
-            parte_real = -2.0 + (3.0 * x / (largura - 1));
+        for (int x = 0; x < largura; x++){
+            double parte_real = -2.0 + (3.0 * x / (largura - 1));
             imagem[y * largura + x] = calcular_pixel(parte_real, parte_imaginaria, max_iteracoes);
         }
     }
@@ -124,8 +121,25 @@ int main(int quantidade_argumentos, char *argumentos[]){
 
     fprintf(arquivo_tempo, "serial: %.8f segundos\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
 
+    inicio = clock();
+
+    calcular_openmp(largura, altura, max_iteracoes, quantidade_threads, imagem_openmp);
+
+    fim = clock();
+
+    for (y = 0; y < altura; y++){
+        for (x = 0; x < largura; x++){
+            fprintf(arquivo_openmp, "%d ", imagem_openmp[y * largura + x]);
+        }
+        fprintf(arquivo_openmp, "\n");
+    }
+
+    fprintf(arquivo_tempo, "openmp: %.8f segundos\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
+
     fclose(arquivo_serial);
+    fclose(arquivo_openmp);
     fclose(arquivo_tempo);
+    free(imagem_openmp);
 
     return 0;
 }
