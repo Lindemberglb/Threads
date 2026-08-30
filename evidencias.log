@@ -1,0 +1,27 @@
+Script started on 2026-08-29 23:44:59-03:00 [TERM="xterm-256color" TTY="/dev/pts/5" COLUMNS="177" LINES="9"]
+[?2004h]0;guitolin@guitolinnote: ~/gllb[01;32mguitolin@guitolinnote[00m:[01;34m~/gllb[00m$ date
+[?2004lSat Aug 29 23:45:16 -03 2026
+[?2004h]0;guitolin@guitolinnote: ~/gllb[01;32mguitolin@guitolinnote[00m:[01;34m~/gllb[00m$ whoami
+[?2004lguitolin
+[?2004h]0;guitolin@guitolinnote: ~/gllb[01;32mguitolin@guitolinnote[00m:[01;34m~/gllb[00m$ pwd
+[?2004l/home/guitolin/gllb
+[?2004h]0;guitolin@guitolinnote: ~/gllb[01;32mguitolin@guitolinnote[00m:[01;34m~/gllb[00m$ [7m./mandelbrot 800 600 1000 4[27m./mandelbrot 800 600 1000 4
+[?2004lbash: ./mandelbrot: No such file or directory
+[?2004h]0;guitolin@guitolinnote: ~/gllb[01;32mguitolin@guitolinnote[00m:[01;34m~/gllb[00m$ git add .
+[?2004l[?2004h]0;guitolin@guitolinnote: ~/gllb[01;32mguitolin@guitolinnote[00m:[01;34m~/gllb[00m$ git commit =[Kk[K-m "fiz o makefile e o mandelbrot.c que [K[K[K[K[K[Kc[1P mandelbrot.cd mandelbrot.ce mandelbrot.cc mandelbrot.ca mandelbrot.cl mandelbrot.cr mandelbrot.ce mandelbrot.ci mandelbrot.c[1P mandelbrot.c[1P mandelbrot.c[1P mandelbrot.c[1P mandelbrot.c[1P mandelbrot.cl mandelbrot.ca mandelbrot.cr mandelbrot.ce mandelbrot.ci mandelbrot.c[C mandelbrot.co mandelbrot.cs mandelbrot.c[C mandelbrot.ca mandelbrot.cr mandelbrot.cg mandelbrot.cu mandelbrot.cm mandelbrot.ce mandelbrot.cn mandelbrot.ct mandelbrot.co mandelbrot.cs mandelbrot.c[C mandelbrot.cn mandelbrot.co mandelbrot.c[C mandelbrot.c[C[C[C[C[C[C[C[C[C[C[C[C[C[1Pmandelbrot.c[1P[1P[1@,[C[1@ [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[1@][1P[1P[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C e tratei o erro cs[Kaso a quantidade de argumentos for inválida^[K"
+[?2004l[main eab832a] fiz o makefile, declarei os argumentos no mandelbrot.c e tratei o erro caso a quantidade de argumentos for inválida
+ 3 files changed, 30 insertions(+)
+ create mode 100644 evidencias.log
+[?2004h]0;guitolin@guitolinnote: ~/gllb[01;32mguitolin@guitolinnote[00m:[01;34m~/gllb[00m$ git push
+[?2004lEnumerating objects: 7, done.
+Counting objects:  14% (1/7)Counting objects:  28% (2/7)Counting objects:  42% (3/7)Counting objects:  57% (4/7)Counting objects:  71% (5/7)Counting objects:  85% (6/7)Counting objects: 100% (7/7)Counting objects: 100% (7/7), done.
+Delta compression using up to 8 threads
+Compressing objects:  25% (1/4)Compressing objects:  50% (2/4)Compressing objects:  75% (3/4)Compressing objects: 100% (4/4)Compressing objects: 100% (4/4), done.
+Writing objects:  25% (1/4)Writing objects:  50% (2/4)Writing objects:  75% (3/4)Writing objects: 100% (4/4)Writing objects: 100% (4/4), 687 bytes | 687.00 KiB/s, done.
+Total 4 (delta 0), reused 0 (delta 0), pack-reused 0
+To https://github.com/Lindemberglb/Threads.git
+   74f514a..eab832a  main -> main
+[?2004h]0;guitolin@guitolinnote: ~/gllb[01;32mguitolin@guitolinnote[00m:[01;34m~/gllb[00m$ exit
+[?2004lexit
+
+Script done on 2026-08-29 23:53:42-03:00 [COMMAND_EXIT_CODE="0"]
