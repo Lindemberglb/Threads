@@ -50,12 +50,14 @@ int main(int quantidade_argumentos, char *argumentos[]){
     int intensidade;
     FILE *arquivo_serial;
     FILE *arquivo_tempo;
+    FILE *arquivo_openmp;
     clock_t inicio;
     clock_t fim;
     int x;
     int y;
     double parte_real;
     double parte_imaginaria;
+    int *imagem_openmp;
 
     if (quantidade_argumentos != 5){
         fprintf(stderr, "erro. quantidade de argumentos inválida.\n");
@@ -72,18 +74,36 @@ int main(int quantidade_argumentos, char *argumentos[]){
         return 1;
     }
 
+    imagem_openmp = malloc(largura * altura * sizeof(int));
+
+    if (imagem_openmp == NULL){
+        fprintf(stderr, "erro. não foi possível reservar memória para a imagem openmp.\n");
+        return 1;
+    }
+
     arquivo_serial = fopen("mandelbrot_gllb_serial.pgm", "w");
 
     if (arquivo_serial == NULL){
-        fprintf(stderr, "erro. nao foi possivel criar o arquivo serial.\n");
+        fprintf(stderr, "erro. não foi possível criar o arquivo serial.\n");
+        return 1;
+    }
+
+    arquivo_openmp = fopen("mandelbrot_gllb_openmp.pgm", "w");
+
+    if (arquivo_openmp == NULL){
+        fprintf(stderr, "erro. não foi possível criar o arquivo openmp.\n");
+        fclose(arquivo_serial);
+        free(imagem_openmp);
         return 1;
     }
 
     arquivo_tempo = fopen("times.txt", "a");
 
     if (arquivo_tempo == NULL){
-        fprintf(stderr, "erro. nao foi possivel criar o arquivo de tempos.\n");
+        fprintf(stderr, "erro. não foi possível criar o arquivo de tempo.\n");
         fclose(arquivo_serial);
+        fclose(arquivo_openmp);
+        free(imagem_openmp);
         return 1;
     }
 
