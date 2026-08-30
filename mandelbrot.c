@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <omp.h>
 
 int calcular_pixel(double parte_real, double parte_imaginaria, int max_iteracoes){
     double real = 0.0;
@@ -20,6 +21,25 @@ int calcular_pixel(double parte_real, double parte_imaginaria, int max_iteracoes
     }
 
     return (iteracoes * 255) / max_iteracoes;
+}
+
+void calcular_openmp(int largura, int altura, int max_iteracoes, int quantidade_threads, int *imagem){
+    int x;
+    int y;
+    double parte_real;
+    double parte_imaginaria;
+
+    omp_set_num_threads(quantidade_threads);
+
+    #pragma omp parallel for
+    for (y = 0; y < altura; y++){
+        parte_imaginaria = 1.5 - (3.0 * y / (altura - 1));
+
+        for (x = 0; x < largura; x++){
+            parte_real = -2.0 + (3.0 * x / (largura - 1));
+            imagem[y * largura + x] = calcular_pixel(parte_real, parte_imaginaria, max_iteracoes);
+        }
+    }
 }
 
 int main(int quantidade_argumentos, char *argumentos[]){
@@ -82,7 +102,7 @@ int main(int quantidade_argumentos, char *argumentos[]){
 
     fim = clock();
 
-    fprintf(arquivo_tempo, "serial: %.6f segundos\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
+    fprintf(arquivo_tempo, "serial: %.8f segundos\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
 
     fclose(arquivo_serial);
     fclose(arquivo_tempo);
