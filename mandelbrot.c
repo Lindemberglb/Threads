@@ -27,6 +27,15 @@ int main(int quantidade_argumentos, char *argumentos[]){
     int altura;
     int max_iteracoes;
     int quantidade_threads;
+    int intensidade;
+    FILE *arquivo_serial;
+    FILE *arquivo_tempo;
+    clock_t inicio;
+    clock_t fim;
+    int x;
+    int y;
+    double parte_real;
+    double parte_imaginaria;
 
     if (quantidade_argumentos != 5){
         fprintf(stderr, "erro. quantidade de argumentos inválida.\n");
@@ -42,6 +51,41 @@ int main(int quantidade_argumentos, char *argumentos[]){
         fprintf(stderr, "erro. os argumentos devem ser maiores que zero.\n");
         return 1;
     }
+
+    arquivo_serial = fopen("mandelbrot_gllb_serial.pgm", "w");
+
+    if (arquivo_serial == NULL){
+        fprintf(stderr, "erro. nao foi possivel criar o arquivo serial.\n");
+        return 1;
+    }
+
+    arquivo_tempo = fopen("times.txt", "a");
+
+    if (arquivo_tempo == NULL){
+        fprintf(stderr, "erro. nao foi possivel criar o arquivo de tempos.\n");
+        fclose(arquivo_serial);
+        return 1;
+    }
+
+    inicio = clock();
+
+    for (y = 0; y < altura; y++){
+        parte_imaginaria = 1.5 - (3.0 * y / (altura - 1));
+
+        for (x = 0; x < largura; x++){
+            parte_real = -2.0 + (3.0 * x / (largura - 1));
+            intensidade = calcular_pixel(parte_real, parte_imaginaria, max_iteracoes);
+            fprintf(arquivo_serial, "%d ", intensidade);
+        }
+        fprintf(arquivo_serial, "\n");
+    }
+
+    fim = clock();
+
+    fprintf(arquivo_tempo, "serial: %.6f segundos\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
+
+    fclose(arquivo_serial);
+    fclose(arquivo_tempo);
 
     return 0;
 }
