@@ -7,6 +7,7 @@
 typedef struct thread{
     int inicio;
     int fim;
+    int intervalo;
     int largura;
     int altura;
     int max_iteracoes;
@@ -45,10 +46,54 @@ void *calcular_pthreads1(void *dados){
         y = i / informacoes->largura;
         x = i % informacoes->largura;
 
-        parte_imaginaria = 1.5 - (3.0 * y / (informacoes->altura - 1));
-        parte_real = -2.0 + (3.0 * x / (informacoes->largura - 1));
+        if (informacoes->altura == 1){
+            parte_imaginaria = 0.0;
+        }
+        else{
+            parte_imaginaria = 1.5 - (3.0 * y / (informacoes->altura - 1));
+        }
+
+        if (informacoes->largura == 1){
+            parte_real = -0.5;
+        }
+        else{
+            parte_real = -2.0 + (3.0 * x / (informacoes->largura - 1));
+        }
 
         informacoes->imagem[i] = calcular_pixel(parte_real, parte_imaginaria, informacoes->max_iteracoes);
+    }
+    return NULL;
+}
+
+void *calcular_pthreads2(void *dados){
+    thread *informacoes = (thread *)dados;
+    int y;
+    int x;
+    int i;
+
+    for (y = informacoes->inicio; y < informacoes->altura; y += informacoes->intervalo){
+        for (x = 0; x < informacoes->largura; x++){
+            i = y * informacoes->largura + x;
+
+            double parte_imaginaria;
+            double parte_real;
+
+            if (informacoes->altura == 1){
+                parte_imaginaria = 0.0;
+            }
+            else{
+                parte_imaginaria = 1.5 - (3.0 * y / (informacoes->altura - 1));
+            }
+
+            if (informacoes->largura == 1){
+                parte_real = -0.5;
+            }
+            else{
+                parte_real = -2.0 + (3.0 * x / (informacoes->largura - 1));
+            }
+
+            informacoes->imagem[i] = calcular_pixel(parte_real, parte_imaginaria, informacoes->max_iteracoes);
+        }
     }
     return NULL;
 }
@@ -60,10 +105,25 @@ void calcular_openmp(int largura, int altura, int max_iteracoes, int quantidade_
 
     #pragma omp parallel for
     for (y = 0; y < altura; y++){
-        double parte_imaginaria = 1.5 - (3.0 * y / (altura - 1));
+        double parte_imaginaria;
+
+        if (altura == 1){
+            parte_imaginaria = 0.0;
+        }
+        else{
+            parte_imaginaria = 1.5 - (3.0 * y / (altura - 1));
+        }
 
         for (int x = 0; x < largura; x++){
-            double parte_real = -2.0 + (3.0 * x / (largura - 1));
+            double parte_real;
+
+            if (largura == 1){
+                parte_real = -0.5;
+            }
+            else{
+                parte_real = -2.0 + (3.0 * x / (largura - 1));
+            }
+
             imagem[y * largura + x] = calcular_pixel(parte_real, parte_imaginaria, max_iteracoes);
         }
     }
@@ -86,9 +146,11 @@ int main(int quantidade_argumentos, char *argumentos[]){
     double parte_imaginaria;
     int *imagem_openmp;
     int *imagem_pthreads1;
+    int *imagem_pthreads2;
     pthread_t *threads;
     thread *informacoes_threads;
     FILE *arquivo_pthreads1;
+    FILE *arquivo_pthreads2;
 
     if (quantidade_argumentos != 5){
         fprintf(stderr, "erro. quantidade de argumentos inválida.\n");
@@ -113,13 +175,15 @@ int main(int quantidade_argumentos, char *argumentos[]){
     }
 
     imagem_pthreads1 = malloc(largura * altura * sizeof(int));
+    imagem_pthreads2 = malloc(largura * altura * sizeof(int));
     threads = malloc(quantidade_threads * sizeof(pthread_t));
     informacoes_threads = malloc(quantidade_threads * sizeof(thread));
 
-    if (imagem_pthreads1 == NULL || threads == NULL || informacoes_threads == NULL){
-        fprintf(stderr, "erro. não foi possível reservar memória para pthreads 1.\n");
+    if (imagem_pthreads1 == NULL || threads == NULL || imagem_pthreads2 == NULL || informacoes_threads == NULL){
+        fprintf(stderr, "erro. não foi possível reservar memória.\n");
         free(imagem_openmp);
         free(imagem_pthreads1);
+        free(imagem_pthreads2);
         free(threads);
         free(informacoes_threads);
         return 1;
@@ -131,10 +195,12 @@ int main(int quantidade_argumentos, char *argumentos[]){
         fprintf(stderr, "erro. não foi possível criar o arquivo serial.\n");
         free(imagem_openmp);
         free(imagem_pthreads1);
+        free(imagem_pthreads2);
         free(threads);
         free(informacoes_threads);
         return 1;
     }
+
     arquivo_openmp = fopen("mandelbrot_gllb_openmp.pgm", "w");
 
     if (arquivo_openmp == NULL){
@@ -142,6 +208,7 @@ int main(int quantidade_argumentos, char *argumentos[]){
         fclose(arquivo_serial);
         free(imagem_openmp);
         free(imagem_pthreads1);
+        free(imagem_pthreads2);
         free(threads);
         free(informacoes_threads);
         return 1;
@@ -155,6 +222,22 @@ int main(int quantidade_argumentos, char *argumentos[]){
         fclose(arquivo_openmp);
         free(imagem_openmp);
         free(imagem_pthreads1);
+        free(imagem_pthreads2);
+        free(threads);
+        free(informacoes_threads);
+        return 1;
+    }
+
+    arquivo_pthreads2 = fopen("mandelbrot_gllb_pthreads2.pgm", "w");
+
+    if (arquivo_pthreads2 == NULL){
+        fprintf(stderr, "erro. não foi possível criar o arquivo pthreads 2.\n");
+        fclose(arquivo_serial);
+        fclose(arquivo_openmp);
+        fclose(arquivo_pthreads1);
+        free(imagem_openmp);
+        free(imagem_pthreads1);
+        free(imagem_pthreads2);
         free(threads);
         free(informacoes_threads);
         return 1;
@@ -167,8 +250,10 @@ int main(int quantidade_argumentos, char *argumentos[]){
         fclose(arquivo_serial);
         fclose(arquivo_openmp);
         fclose(arquivo_pthreads1);
+        fclose(arquivo_pthreads2);
         free(imagem_openmp);
         free(imagem_pthreads1);
+        free(imagem_pthreads2);
         free(threads);
         free(informacoes_threads);
         return 1;
@@ -177,10 +262,20 @@ int main(int quantidade_argumentos, char *argumentos[]){
     inicio = clock();
 
     for (y = 0; y < altura; y++){
-        parte_imaginaria = 1.5 - (3.0 * y / (altura - 1));
+        if (altura == 1){
+            parte_imaginaria = 0.0;
+        }
+        else{
+            parte_imaginaria = 1.5 - (3.0 * y / (altura - 1));
+        }
 
         for (x = 0; x < largura; x++){
-            parte_real = -2.0 + (3.0 * x / (largura - 1));
+            if (largura == 1){
+                parte_real = -0.5;
+            }
+            else{
+                parte_real = -2.0 + (3.0 * x / (largura - 1));
+            }
             intensidade = calcular_pixel(parte_real, parte_imaginaria, max_iteracoes);
             fprintf(arquivo_serial, "%d ", intensidade);
         }
@@ -221,9 +316,11 @@ int main(int quantidade_argumentos, char *argumentos[]){
             fclose(arquivo_serial);
             fclose(arquivo_openmp);
             fclose(arquivo_pthreads1);
+            fclose(arquivo_pthreads2);
             fclose(arquivo_tempo);
             free(imagem_openmp);
             free(imagem_pthreads1);
+            free(imagem_pthreads2);
             free(threads);
             free(informacoes_threads);
             return 1;
@@ -236,9 +333,11 @@ int main(int quantidade_argumentos, char *argumentos[]){
             fclose(arquivo_serial);
             fclose(arquivo_openmp);
             fclose(arquivo_pthreads1);
+            fclose(arquivo_pthreads2);
             fclose(arquivo_tempo);
             free(imagem_openmp);
             free(imagem_pthreads1);
+            free(imagem_pthreads2);
             free(threads);
             free(informacoes_threads);
             return 1;
@@ -256,12 +355,68 @@ int main(int quantidade_argumentos, char *argumentos[]){
 
     fprintf(arquivo_tempo, "pthreads1: %.8f segundos\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
 
+    inicio = clock();
+
+    for (int i = 0; i < quantidade_threads; i++){
+        informacoes_threads[i].inicio = i;
+        informacoes_threads[i].intervalo = quantidade_threads;
+        informacoes_threads[i].largura = largura;
+        informacoes_threads[i].altura = altura;
+        informacoes_threads[i].max_iteracoes = max_iteracoes;
+        informacoes_threads[i].imagem = imagem_pthreads2;
+
+        if (pthread_create(&threads[i], NULL, calcular_pthreads2, &informacoes_threads[i]) != 0){
+            fprintf(stderr, "erro. não foi possível criar a thread %d.\n", i);
+            fclose(arquivo_serial);
+            fclose(arquivo_openmp);
+            fclose(arquivo_pthreads1);
+            fclose(arquivo_pthreads2);
+            fclose(arquivo_tempo);
+            free(imagem_openmp);
+            free(imagem_pthreads1);
+            free(imagem_pthreads2);
+            free(threads);
+            free(informacoes_threads);
+            return 1;
+        }
+    }
+
+    for (int i = 0; i < quantidade_threads; i++){
+        if (pthread_join(threads[i], NULL) != 0){
+            fprintf(stderr, "erro. não foi possível esperar a thread %d.\n", i);
+            fclose(arquivo_serial);
+            fclose(arquivo_openmp);
+            fclose(arquivo_pthreads1);
+            fclose(arquivo_pthreads2);
+            fclose(arquivo_tempo);
+            free(imagem_openmp);
+            free(imagem_pthreads1);
+            free(imagem_pthreads2);
+            free(threads);
+            free(informacoes_threads);
+            return 1;
+        }
+    }
+
+    fim = clock();
+
+    for (y = 0; y < altura; y++){
+        for (x = 0; x < largura; x++){
+            fprintf(arquivo_pthreads2, "%d ", imagem_pthreads2[y * largura + x]);
+        }
+        fprintf(arquivo_pthreads2, "\n");
+    }
+
+    fprintf(arquivo_tempo, "pthreads2: %.8f segundos\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
+
     fclose(arquivo_serial);
     fclose(arquivo_openmp);
     fclose(arquivo_pthreads1);
+    fclose(arquivo_pthreads2);
     fclose(arquivo_tempo);
     free(imagem_openmp);
     free(imagem_pthreads1);
+    free(imagem_pthreads2);
     free(threads);
     free(informacoes_threads);
 
