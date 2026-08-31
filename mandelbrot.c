@@ -3,6 +3,7 @@
 #include <time.h>
 #include <omp.h>
 #include <pthread.h>
+#include <limits.h>
 
 typedef struct thread{
     int inicio;
@@ -133,6 +134,18 @@ double tempo_decorrido(struct timespec inicio, struct timespec fim){
     return (fim.tv_sec - inicio.tv_sec) + (fim.tv_nsec - inicio.tv_nsec) / 1e9;
 }
 
+int ler_inteiro_positivo(const char *texto, int *valor){
+    char *fim;
+    long numero = strtol(texto, &fim, 10);
+
+    if (*fim != '\0' || numero <= 0 || numero > INT_MAX){
+        return 0;
+    }
+
+    *valor = (int)numero;
+    return 1;
+}
+
 int main(int quantidade_argumentos, char *argumentos[]){
     int largura;
     int altura;
@@ -161,35 +174,68 @@ int main(int quantidade_argumentos, char *argumentos[]){
         return 1;
     }
 
-    largura = atoi(argumentos[1]);
-    altura = atoi(argumentos[2]);
-    max_iteracoes = atoi(argumentos[3]);
-    quantidade_threads = atoi(argumentos[4]);
+    if (!ler_inteiro_positivo(argumentos[1], &largura)){
+        fprintf(stderr, "erro. largura inválida.\n");
+        return 1;
+    }
 
-    if (largura <= 0 || altura <= 0 || max_iteracoes <= 0 || quantidade_threads <= 0){
-        fprintf(stderr, "erro. os argumentos devem ser maiores que zero.\n");
+    if (!ler_inteiro_positivo(argumentos[2], &altura)){
+        fprintf(stderr, "erro. altura inválida.\n");
+        return 1;
+    }
+
+    if (!ler_inteiro_positivo(argumentos[3], &max_iteracoes)){
+        fprintf(stderr, "erro. número de iterações inválido.\n");
+        return 1;
+    }
+
+    if (!ler_inteiro_positivo(argumentos[4], &quantidade_threads)){
+        fprintf(stderr, "erro. número de threads inválido.\n");
         return 1;
     }
 
     imagem_openmp = malloc(largura * altura * sizeof(int));
 
     if (imagem_openmp == NULL){
-        fprintf(stderr, "erro. não foi possível reservar memória para a imagem openmp.\n");
+        fprintf(stderr, "erro. não foi possível alocar a imagem openmp.\n");
         return 1;
     }
 
     imagem_pthreads1 = malloc(largura * altura * sizeof(int));
+
+    if(imagem_pthreads1 == NULL){
+        fprintf(stdeer, "erro. não foi possível alocar a imagem pthreads1.\n");
+        free(imagem_openmp);
+        return 1;
+    }
+
     imagem_pthreads2 = malloc(largura * altura * sizeof(int));
+
+    if(imagem_pthreads2 == NULL){
+        fprintf(stdeer, "erro. não foi possível alocar a imagem pthreads2.\n");
+        free(imagem_openmp);
+        free(imagem_pthreads1);
+        return 1;
+    }
+
     threads = malloc(quantidade_threads * sizeof(pthread_t));
+    
+    if(threads == NULL){
+        fprintf(stdeer, "erro. não foi possível alocar threads.\n");
+        free(imagem_openmp);
+        free(imagem_pthreads1);
+        free(imagem_pthreads2);
+        return 1;
+    }
+
     informacoes_threads = malloc(quantidade_threads * sizeof(thread));
 
-    if (imagem_pthreads1 == NULL || threads == NULL || imagem_pthreads2 == NULL || informacoes_threads == NULL){
-        fprintf(stderr, "erro. não foi possível reservar memória.\n");
+    if(informacoes_threads == NULL){
+        fprintf(stdeer, "erro. nao foi possível alocar informacoes_threads.\n");
         free(imagem_openmp);
         free(imagem_pthreads1);
         free(imagem_pthreads2);
         free(threads);
-        free(informacoes_threads);
         return 1;
     }
 
@@ -317,6 +363,9 @@ int main(int quantidade_argumentos, char *argumentos[]){
 
         if (pthread_create(&threads[i], NULL, calcular_pthreads1, &informacoes_threads[i]) != 0){
             fprintf(stderr, "erro. não foi possível criar a thread %d.\n", i);
+            for (int j = 0; j < i; j++){
+                pthread_join(threads[j], NULL);
+            }
             fclose(arquivo_serial);
             fclose(arquivo_openmp);
             fclose(arquivo_pthreads1);
@@ -371,6 +420,9 @@ int main(int quantidade_argumentos, char *argumentos[]){
 
         if (pthread_create(&threads[i], NULL, calcular_pthreads2, &informacoes_threads[i]) != 0){
             fprintf(stderr, "erro. não foi possível criar a thread %d.\n", i);
+            for (int j = 0; j < i; j++){
+                pthread_join(threads[j], NULL);
+            }
             fclose(arquivo_serial);
             fclose(arquivo_openmp);
             fclose(arquivo_pthreads1);
