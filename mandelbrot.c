@@ -129,6 +129,10 @@ void calcular_openmp(int largura, int altura, int max_iteracoes, int quantidade_
     }
 }
 
+double tempo_decorrido(struct timespec inicio, struct timespec fim){
+    return (fim.tv_sec - inicio.tv_sec) + (fim.tv_nsec - inicio.tv_nsec) / 1e9;
+}
+
 int main(int quantidade_argumentos, char *argumentos[]){
     int largura;
     int altura;
@@ -138,8 +142,8 @@ int main(int quantidade_argumentos, char *argumentos[]){
     FILE *arquivo_serial;
     FILE *arquivo_tempo;
     FILE *arquivo_openmp;
-    clock_t inicio;
-    clock_t fim;
+    struct timespec inicio;
+    struct timespec fim;
     int x;
     int y;
     double parte_real;
@@ -243,7 +247,7 @@ int main(int quantidade_argumentos, char *argumentos[]){
         return 1;
     }
 
-    arquivo_tempo = fopen("times.txt", "a");
+    arquivo_tempo = fopen("times.txt", "w");
 
     if (arquivo_tempo == NULL){
         fprintf(stderr, "erro. não foi possível criar o arquivo de tempo.\n");
@@ -259,7 +263,7 @@ int main(int quantidade_argumentos, char *argumentos[]){
         return 1;
     }
 
-    inicio = clock();
+    clock_gettime(CLOCK_MONOTONIC, &inicio);
 
     for (y = 0; y < altura; y++){
         if (altura == 1){
@@ -282,15 +286,15 @@ int main(int quantidade_argumentos, char *argumentos[]){
         fprintf(arquivo_serial, "\n");
     }
 
-    fim = clock();
+    clock_gettime(CLOCK_MONOTONIC, &fim);
 
-    fprintf(arquivo_tempo, "serial: %.8f segundos\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
+    fprintf(arquivo_tempo, "serial: %.8f segundos\n", tempo_decorrido(inicio, fim));
 
-    inicio = clock();
+    clock_gettime(CLOCK_MONOTONIC, &inicio);
 
     calcular_openmp(largura, altura, max_iteracoes, quantidade_threads, imagem_openmp);
 
-    fim = clock();
+    clock_gettime(CLOCK_MONOTONIC, &fim);
 
     for (y = 0; y < altura; y++){
         for (x = 0; x < largura; x++){
@@ -299,9 +303,9 @@ int main(int quantidade_argumentos, char *argumentos[]){
         fprintf(arquivo_openmp, "\n");
     }
 
-    fprintf(arquivo_tempo, "openmp: %.8f segundos\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
+    fprintf(arquivo_tempo, "openmp: %.8f segundos\n", tempo_decorrido(inicio, fim));
     
-    inicio = clock();
+    clock_gettime(CLOCK_MONOTONIC, &inicio);
 
     for (int i = 0; i < quantidade_threads; i++){
         informacoes_threads[i].inicio = i * (largura * altura) / quantidade_threads;
@@ -344,7 +348,7 @@ int main(int quantidade_argumentos, char *argumentos[]){
         }
     }
 
-    fim = clock();
+    clock_gettime(CLOCK_MONOTONIC, &fim);
 
     for (y = 0; y < altura; y++){
         for (x = 0; x < largura; x++){
@@ -353,9 +357,9 @@ int main(int quantidade_argumentos, char *argumentos[]){
         fprintf(arquivo_pthreads1, "\n");
     }
 
-    fprintf(arquivo_tempo, "pthreads1: %.8f segundos\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
+    fprintf(arquivo_tempo, "pthreads1: %.8f segundos\n", tempo_decorrido(inicio, fim));
 
-    inicio = clock();
+    clock_gettime(CLOCK_MONOTONIC, &inicio);
 
     for (int i = 0; i < quantidade_threads; i++){
         informacoes_threads[i].inicio = i;
@@ -398,7 +402,7 @@ int main(int quantidade_argumentos, char *argumentos[]){
         }
     }
 
-    fim = clock();
+    clock_gettime(CLOCK_MONOTONIC, &fim);
 
     for (y = 0; y < altura; y++){
         for (x = 0; x < largura; x++){
@@ -407,7 +411,7 @@ int main(int quantidade_argumentos, char *argumentos[]){
         fprintf(arquivo_pthreads2, "\n");
     }
 
-    fprintf(arquivo_tempo, "pthreads2: %.8f segundos\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
+    fprintf(arquivo_tempo, "pthreads2: %.8f segundos\n", tempo_decorrido(inicio, fim));
 
     fclose(arquivo_serial);
     fclose(arquivo_openmp);
