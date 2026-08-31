@@ -2,6 +2,16 @@
 #include <stdlib.h>
 #include <time.h>
 #include <omp.h>
+#include <pthread.h>
+
+typedef struct thread{
+    int inicio;
+    int fim;
+    int largura;
+    int altura;
+    int max_iteracoes;
+    int *imagem;
+}thread;
 
 int calcular_pixel(double parte_real, double parte_imaginaria, int max_iteracoes){
     double real = 0.0;
@@ -21,6 +31,26 @@ int calcular_pixel(double parte_real, double parte_imaginaria, int max_iteracoes
     }
 
     return (iteracoes * 255) / max_iteracoes;
+}
+
+void *calcular_pthreads1(void *dados){
+    thread *informacoes = (thread *)dados;
+    int i;
+    int x;
+    int y;
+    double parte_real;
+    double parte_imaginaria;
+
+    for (i = informacoes->inicio; i < informacoes->fim; i++){
+        y = i / informacoes->largura;
+        x = i % informacoes->largura;
+
+        parte_imaginaria = 1.5 - (3.0 * y / (informacoes->altura - 1));
+        parte_real = -2.0 + (3.0 * x / (informacoes->largura - 1));
+
+        informacoes->imagem[i] = calcular_pixel(parte_real, parte_imaginaria, informacoes->max_iteracoes);
+    }
+    return NULL;
 }
 
 void calcular_openmp(int largura, int altura, int max_iteracoes, int quantidade_threads, int *imagem){
