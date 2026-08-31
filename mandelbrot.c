@@ -204,7 +204,7 @@ int main(int quantidade_argumentos, char *argumentos[]){
     imagem_pthreads1 = malloc(largura * altura * sizeof(int));
 
     if(imagem_pthreads1 == NULL){
-        fprintf(stdeer, "erro. não foi possível alocar a imagem pthreads1.\n");
+        fprintf(stderr, "erro. não foi possível alocar a imagem pthreads1.\n");
         free(imagem_openmp);
         return 1;
     }
@@ -212,7 +212,7 @@ int main(int quantidade_argumentos, char *argumentos[]){
     imagem_pthreads2 = malloc(largura * altura * sizeof(int));
 
     if(imagem_pthreads2 == NULL){
-        fprintf(stdeer, "erro. não foi possível alocar a imagem pthreads2.\n");
+        fprintf(stderr, "erro. não foi possível alocar a imagem pthreads2.\n");
         free(imagem_openmp);
         free(imagem_pthreads1);
         return 1;
@@ -221,7 +221,7 @@ int main(int quantidade_argumentos, char *argumentos[]){
     threads = malloc(quantidade_threads * sizeof(pthread_t));
     
     if(threads == NULL){
-        fprintf(stdeer, "erro. não foi possível alocar threads.\n");
+        fprintf(stderr, "erro. não foi possível alocar threads.\n");
         free(imagem_openmp);
         free(imagem_pthreads1);
         free(imagem_pthreads2);
@@ -231,7 +231,7 @@ int main(int quantidade_argumentos, char *argumentos[]){
     informacoes_threads = malloc(quantidade_threads * sizeof(thread));
 
     if(informacoes_threads == NULL){
-        fprintf(stdeer, "erro. nao foi possível alocar informacoes_threads.\n");
+        fprintf(stderr, "erro. nao foi possível alocar informacoes_threads.\n");
         free(imagem_openmp);
         free(imagem_pthreads1);
         free(imagem_pthreads2);
