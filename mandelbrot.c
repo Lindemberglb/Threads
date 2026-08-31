@@ -85,6 +85,10 @@ int main(int quantidade_argumentos, char *argumentos[]){
     double parte_real;
     double parte_imaginaria;
     int *imagem_openmp;
+    int *imagem_pthreads1;
+    pthread_t *threads;
+    thread *informacoes_threads;
+    FILE *arquivo_pthreads1;
 
     if (quantidade_argumentos != 5){
         fprintf(stderr, "erro. quantidade de argumentos inválida.\n");
@@ -108,19 +112,51 @@ int main(int quantidade_argumentos, char *argumentos[]){
         return 1;
     }
 
+    imagem_pthreads1 = malloc(largura * altura * sizeof(int));
+    threads = malloc(quantidade_threads * sizeof(pthread_t));
+    informacoes_threads = malloc(quantidade_threads * sizeof(thread));
+
+    if (imagem_pthreads1 == NULL || threads == NULL || informacoes_threads == NULL){
+        fprintf(stderr, "erro. não foi possível reservar memória para pthreads 1.\n");
+        free(imagem_openmp);
+        free(imagem_pthreads1);
+        free(threads);
+        free(informacoes_threads);
+        return 1;
+    }
+
     arquivo_serial = fopen("mandelbrot_gllb_serial.pgm", "w");
 
     if (arquivo_serial == NULL){
         fprintf(stderr, "erro. não foi possível criar o arquivo serial.\n");
+        free(imagem_openmp);
+        free(imagem_pthreads1);
+        free(threads);
+        free(informacoes_threads);
         return 1;
     }
-
     arquivo_openmp = fopen("mandelbrot_gllb_openmp.pgm", "w");
 
     if (arquivo_openmp == NULL){
         fprintf(stderr, "erro. não foi possível criar o arquivo openmp.\n");
         fclose(arquivo_serial);
         free(imagem_openmp);
+        free(imagem_pthreads1);
+        free(threads);
+        free(informacoes_threads);
+        return 1;
+    }
+
+    arquivo_pthreads1 = fopen("mandelbrot_gllb_pthreads1.pgm", "w");
+
+    if (arquivo_pthreads1 == NULL){
+        fprintf(stderr, "erro. não foi possível criar o arquivo pthreads 1.\n");
+        fclose(arquivo_serial);
+        fclose(arquivo_openmp);
+        free(imagem_openmp);
+        free(imagem_pthreads1);
+        free(threads);
+        free(informacoes_threads);
         return 1;
     }
 
@@ -130,7 +166,11 @@ int main(int quantidade_argumentos, char *argumentos[]){
         fprintf(stderr, "erro. não foi possível criar o arquivo de tempo.\n");
         fclose(arquivo_serial);
         fclose(arquivo_openmp);
+        fclose(arquivo_pthreads1);
         free(imagem_openmp);
+        free(imagem_pthreads1);
+        free(threads);
+        free(informacoes_threads);
         return 1;
     }
 
@@ -168,8 +208,12 @@ int main(int quantidade_argumentos, char *argumentos[]){
 
     fclose(arquivo_serial);
     fclose(arquivo_openmp);
+    fclose(arquivo_pthreads1);
     fclose(arquivo_tempo);
     free(imagem_openmp);
+    free(imagem_pthreads1);
+    free(threads);
+    free(informacoes_threads);
 
     return 0;
 }
