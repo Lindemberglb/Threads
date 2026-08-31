@@ -205,6 +205,56 @@ int main(int quantidade_argumentos, char *argumentos[]){
     }
 
     fprintf(arquivo_tempo, "openmp: %.8f segundos\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
+    
+    inicio = clock();
+
+    for (int i = 0; i < quantidade_threads; i++){
+        informacoes_threads[i].inicio = i * (largura * altura) / quantidade_threads;
+        informacoes_threads[i].fim = (i + 1) * (largura * altura) / quantidade_threads;
+        informacoes_threads[i].largura = largura;
+        informacoes_threads[i].altura = altura;
+        informacoes_threads[i].max_iteracoes = max_iteracoes;
+        informacoes_threads[i].imagem = imagem_pthreads1;
+
+        if (pthread_create(&threads[i], NULL, calcular_pthreads1, &informacoes_threads[i]) != 0){
+            fprintf(stderr, "erro. não foi possível criar a thread %d.\n", i);
+            fclose(arquivo_serial);
+            fclose(arquivo_openmp);
+            fclose(arquivo_pthreads1);
+            fclose(arquivo_tempo);
+            free(imagem_openmp);
+            free(imagem_pthreads1);
+            free(threads);
+            free(informacoes_threads);
+            return 1;
+        }
+    }
+
+    for (int i = 0; i < quantidade_threads; i++){
+        if (pthread_join(threads[i], NULL) != 0){
+            fprintf(stderr, "erro. não foi possível esperar a thread %d.\n", i);
+            fclose(arquivo_serial);
+            fclose(arquivo_openmp);
+            fclose(arquivo_pthreads1);
+            fclose(arquivo_tempo);
+            free(imagem_openmp);
+            free(imagem_pthreads1);
+            free(threads);
+            free(informacoes_threads);
+            return 1;
+        }
+    }
+
+    fim = clock();
+
+    for (y = 0; y < altura; y++){
+        for (x = 0; x < largura; x++){
+            fprintf(arquivo_pthreads1, "%d ", imagem_pthreads1[y * largura + x]);
+        }
+        fprintf(arquivo_pthreads1, "\n");
+    }
+
+    fprintf(arquivo_tempo, "pthreads1: %.8f segundos\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
 
     fclose(arquivo_serial);
     fclose(arquivo_openmp);
