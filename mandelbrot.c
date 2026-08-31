@@ -32,7 +32,7 @@ int calcular_pixel(double parte_real, double parte_imaginaria, int max_iteracoes
         iteracoes++;
     }
 
-    return (iteracoes * 255) / max_iteracoes;
+    return (int)((double)iteracoes * 255.0 / max_iteracoes);
 }
 
 void *calcular_pthreads1(void *dados){
@@ -194,14 +194,14 @@ int main(int quantidade_argumentos, char *argumentos[]){
         return 1;
     }
 
-    imagem_openmp = malloc(largura * altura * sizeof(int));
+    imagem_openmp = malloc((size_t)largura * altura * sizeof(int));
 
     if (imagem_openmp == NULL){
         fprintf(stderr, "erro. não foi possível alocar a imagem openmp.\n");
         return 1;
     }
 
-    imagem_pthreads1 = malloc(largura * altura * sizeof(int));
+    imagem_pthreads1 = malloc((size_t)largura * altura * sizeof(int));
 
     if(imagem_pthreads1 == NULL){
         fprintf(stderr, "erro. não foi possível alocar a imagem pthreads1.\n");
@@ -209,7 +209,7 @@ int main(int quantidade_argumentos, char *argumentos[]){
         return 1;
     }
 
-    imagem_pthreads2 = malloc(largura * altura * sizeof(int));
+    imagem_pthreads2 = malloc((size_t)largura * altura * sizeof(int));
 
     if(imagem_pthreads2 == NULL){
         fprintf(stderr, "erro. não foi possível alocar a imagem pthreads2.\n");
@@ -354,8 +354,8 @@ int main(int quantidade_argumentos, char *argumentos[]){
     clock_gettime(CLOCK_MONOTONIC, &inicio);
 
     for (int i = 0; i < quantidade_threads; i++){
-        informacoes_threads[i].inicio = i * (largura * altura) / quantidade_threads;
-        informacoes_threads[i].fim = (i + 1) * (largura * altura) / quantidade_threads;
+        informacoes_threads[i].inicio = (int)((double)i * largura * altura / quantidade_threads);
+        informacoes_threads[i].fim = (int)((double)(i + 1) * largura * altura / quantidade_threads);
         informacoes_threads[i].largura = largura;
         informacoes_threads[i].altura = altura;
         informacoes_threads[i].max_iteracoes = max_iteracoes;
